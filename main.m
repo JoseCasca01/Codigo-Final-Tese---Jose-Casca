@@ -84,7 +84,7 @@ else
     disp(mean(val));
 end
 
-%% Signal Amplitude Ideal vs Erro
+%% Signal Amplitude Ideal vs Sensors Erro
 k=1;
 
 R = distance(sensorsPos,BS);
@@ -122,7 +122,56 @@ for m = 1:1
     legend('Average');
 end
 
-%% Array Factor Ideal vs Erro
+%% Signal Amplitude Ideal vs BS Erro
+clear variance
+clear valnormalized
+
+k=1;
+
+R = distance(sensorsPos,BS);
+
+val = receptor(R,f,c,N,lambda,0);
+
+rounds = 1000;
+
+%variance1(1,:) = 0.025:0.05:3;
+%variance2(1,:) = 3.025:0.05:6;
+%variance3(1,:) = 0.025:0.05:0.75;
+%variance4(1,:) = 2:0.2:3;
+variance = 3.025:0.05:6;
+Median_y =  zeros(1,length(variance));
+Median_x = zeros(1,length(variance));
+valtests = zeros(rounds,length(variance));
+  
+for m = 1:1
+    for i = 1:length(variance)
+        for j = 1:rounds
+            [valtests(j,i),~] = receptor_BSposError(fieldx,fieldy,BS,R,sensorsPos,f,c,N,lambda,variance(i)*lambda,0);
+        end
+    end
+
+
+    valnormalized = valtests/val;
+
+    figure;
+    hd = boxplot(valnormalized,variance);
+    hold on;
+    xlabel('Variance (wavelength)');
+    ylabel('Normalized received signal power');
+    title('Received signal normalized by ideal signal');
+    for i=6:7:7*length(variance)-1
+        Median_x(k) = sum(get(hd(i),'XData'))/2;
+        Median_y(k) = sum(get(hd(i),'YData'))/2;
+        k=k+1;
+    end
+    plot(Median_x,Median_y);
+    legend('Average');
+end
+
+%% Array Factor Ideal vs Sensors Erro
+clear variance
+clear valnormalized
+    
 k = 1;
 
 R = distance(sensorsPos,BS);
@@ -130,7 +179,7 @@ R = distance(sensorsPos,BS);
 AFIdeal = N; %Com a posição ideal o AF é igual ao número de sensores
 
 rounds = 300;
-variance = 0.05:0.025:0.5;
+variance = 0.025:0.025:0.5;
 Median_y =  zeros(1,length(variance));
 Median_x = zeros(1,length(variance));
 
@@ -160,4 +209,97 @@ for m = 1:1
     legend('Average');
 end
 
-%% 
+%% Array Factor Ideal vs BS Erro
+k = 1;
+
+R = distance(sensorsPos,BS);
+
+AFIdeal = N; %Com a posição ideal o AF é igual ao número de sensores
+
+rounds = 1000;
+%variance1(1,:) = 0.025:0.05:3;
+%variance2(1,:) = 3.025:0.05:6;
+%variance3(1,:) = 0.025:0.05:0.75;
+%variance4(1,:) = 2:0.2:3;
+variance = 3.025:0.05:6;
+Median_y =  zeros(1,length(variance));
+Median_x = zeros(1,length(variance));
+
+for m = 1:1
+    AFtest = zeros(rounds,length(variance));
+    for i = 1:length(variance)
+        for j = 1:rounds*m
+            [~, Rerror] = receptor_BSposError(fieldx,fieldy,BS,R,sensorsPos,f,c,N,lambda,variance(i)*lambda,0);
+            AFtest(j,i) = sum(exp(1j*2*pi/lambda*(R-Rerror)));
+        end
+    end
+    AFnormalized = abs(AFtest/AFIdeal);
+
+    figure;
+    hd = boxplot(AFnormalized,variance);
+    hold on;
+    xlabel('Variance (wavelength)');
+    ylabel('Normalized Array Factor');
+    title('Array Factor normalized by ideal Array Factor')
+    for i=6:7:7*length(variance)-1
+        Median_x(k) = sum(get(hd(i),'XData'))/2;
+        Median_y(k) = sum(get(hd(i),'YData'))/2;
+        k=k+1;
+    end
+    plot(Median_x,Median_y);
+    legend('Average');
+end
+
+%% Ponto ótimo do drone
+close all;
+
+[val,BSoptm,R] = optmdrone(fieldx,fieldy,sensorsPos,f,c,N,lambda,25,25);
+
+%x = 0:fieldx/25:fieldx;
+%y = fieldy:-fieldy/25:0;
+
+figure;
+imagesc(val/max(max(val)))
+colorMap = jet(256);
+colormap(colorMap);
+colorbar;
+
+%%
+k = 1;
+
+
+AFIdeal = N; %Com a posição ideal o AF é igual ao número de sensores
+
+rounds = 1000;
+%variance1(1,:) = 0.025:0.05:3;
+%variance2(1,:) = 3.025:0.05:6;
+%variance3(1,:) = 0.025:0.05:0.75;
+%variance4(1,:) = 2:0.2:3;
+variance = 0.025:0.05:3;
+Median_y =  zeros(1,length(variance));
+Median_x = zeros(1,length(variance));
+
+for m = 1:1
+    AFtest = zeros(rounds,length(variance));
+    for i = 1:length(variance)
+        for j = 1:rounds*m
+            [~, Rerror] = receptor_BSposError(fieldx,fieldy,BSoptm,R,sensorsPos,f,c,N,lambda,variance(i)*lambda,0);
+            AFtest(j,i) = sum(exp(1j*2*pi/lambda*(R-Rerror)));
+        end
+    end
+    AFnormalized = abs(AFtest/AFIdeal);
+
+    figure;
+    hd = boxplot(AFnormalized,variance);
+    hold on;
+    xlabel('Variance (wavelength)');
+    ylabel('Normalized Array Factor');
+    title('Array Factor normalized by ideal Array Factor')
+    for i=6:7:7*length(variance)-1
+        Median_x(k) = sum(get(hd(i),'XData'))/2;
+        Median_y(k) = sum(get(hd(i),'YData'))/2;
+        k=k+1;
+    end
+    plot(Median_x,Median_y);
+    legend('Average');
+end

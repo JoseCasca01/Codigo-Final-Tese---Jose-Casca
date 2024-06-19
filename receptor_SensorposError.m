@@ -18,13 +18,16 @@ function [val,grouperror] = receptor_SensorposError(fieldx,fieldy,BS,R,group,f,c
     traveling_time = R/c;
 
     PropagationLoss = (4*pi*R/lambda).^2;
-    grouperror = zeros(size(group,1),size(group,2));
+    grouperror = zeros(size(group,1),size(group,2),size(group,3));
     for i = 1:size(group,1)
         for j = 1:size(group,2)
                 %randn de média = 0 e variancia = erro
                 grouperror(i,j) = group(i,j) + (erro*randn(1,1));
         end
     end
+    
+    %Para remover erro da componetne z dos sensores -> ativar linha abaixo
+    %grouperror(:,:,3)=zeros(size(grouperror,1),size(grouperror,2),1);
 
     Rerror = distance(grouperror,BS);    
     t=linspace(0,max(Rerror)*3/c,10000); % 1 período
@@ -59,14 +62,15 @@ function [val,grouperror] = receptor_SensorposError(fieldx,fieldy,BS,R,group,f,c
         legend('Drone', 'Node Position', 'Node Position with error');
         axis([0, fieldy, 0, fieldx]);
         %%%%%3D%%%%%
-        % plot3(BS(1),BS(2),BS(3),'X'),hold on;
-        % plot3(group(:,1),group(:,2),group(:,3),'O')
-        % plot3(grouperror(:,1),grouperror(:,2),grouperror(:,3),'diamond');
-        % title('Field');
-        % ylabel('yfield (m)');
-        % xlabel('xfield (m)');
-        % legend('Drone', 'Node Position', 'Node Position with error');
-        % axis([0, fieldy, 0, fieldx]);
+        figure(8);
+        plot3(BS(1),BS(2),BS(3),'X'),hold on;
+        plot3(group(:,1),group(:,2),group(:,3),'O')
+        plot3(grouperror(:,1),grouperror(:,2),grouperror(:,3),'diamond');
+        title('Field');
+        ylabel('yfield (m)');
+        xlabel('xfield (m)');
+        legend('Drone', 'Node Position', 'Node Position with error');
+        axis([0, fieldy, 0, fieldx]);
 
         figure(2);
         plot(1:N,PropagationLoss,'-X');

@@ -10,6 +10,7 @@ function [val] = receptor(R,f,c,N,lambda,mode)
     t=linspace(0,tmax,10000); % 1 período
     %tstem = 0:1/f:tmax;
 
+    %signals = ones(N,length(t));
     signals = zeros(N,length(t));
     for i = 1:N
         signals(i,:) = cos(2*pi*f*t-phase(i));

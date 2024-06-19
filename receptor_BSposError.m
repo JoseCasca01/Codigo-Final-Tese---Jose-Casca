@@ -1,4 +1,4 @@
-function [val] = receptor_BSposError(fieldx,fieldy,BS,R,group,f,c,N,lambda,erro,mode)
+function [val,Rerror] = receptor_BSposError(fieldx,fieldy,BS,R,group,f,c,N,lambda,erro,mode)
 
     %O receptor vai esperar um intervalo de tempo igual a t pelos sinais todos
     t=linspace(0,max(R)*3/c,10000); % 1 período
@@ -33,23 +33,35 @@ function [val] = receptor_BSposError(fieldx,fieldy,BS,R,group,f,c,N,lambda,erro,
         signalsCorrect(i,:) = cos(2*pi*f*t-phaseCorrect(i));
     end
 
-    [adjustsignals,adjustsignals_Loss] = adjsig(N,t,signals,traveling_time,PropagationLoss);
-    [~, adjustsignals_LossCorrect] = adjsig(N,t,signalsCorrect,traveling_time,PropagationLoss);
-    %Valor espera < 0 visto que o sinal com erro na posição terá -x Potência do que o sinal ideal 
+    [~, adjustsignals_Loss, receivedsignal, receivedsignal_Loss] = adjsig(N,t,signals,traveling_time,PropagationLoss);
+    [~, ~, ~, idealsignal_Loss] = adjsig(N,t,signalsCorrect,traveling_time,PropagationLoss);
 
     aux = sum(adjustsignals_Loss);
-    val=max(aux(t>=1.1*traveling_time(R==max(R))));
-    
+    val = max(aux(t>=1.1*traveling_time(R==max(R))));
+    %disp(aux);
+    %disp(val);
     if mode == 1
         close all;
 
         figure(1);
-        plot(group(:,1),group(:,2),'O'), hold on;
-        plot(BS(1),BS(2),'X');
-        plot(BSerror(1),BSerror(2),'diamond');
+        %%%%% 2D%%%%%
+        plot(BS(1),BS(2),'X'),hold on;
+        plot(group(:,1),group(:,2),'O')
+        plot(BSerror(:,1),BSerror(:,2),'diamond');
         title('Field');
         ylabel('yfield (m)');
         xlabel('xfield (m)');
+        legend('Drone', 'Node Position', 'Drone Position with error');
+        axis([0, fieldy, 0, fieldx]);
+        %%%%%3D%%%%%
+        figure(8);
+        plot3(BS(1),BS(2),BS(3),'X'),hold on;
+        plot3(group(:,1),group(:,2),group(:,3),'O')
+        plot3(BSerror(:,1),BSerror(:,2),BSerror(:,3),'diamond');
+        title('Field');
+        ylabel('yfield (m)');
+        xlabel('xfield (m)');
+        legend('Drone', 'Node Position', 'Drone Position with error');
         axis([0, fieldy, 0, fieldx]);
 
         figure(2);
@@ -65,10 +77,11 @@ function [val] = receptor_BSposError(fieldx,fieldy,BS,R,group,f,c,N,lambda,erro,
         % ylabel('Amplitude');
         
         figure(4);
-        plot(t,sum(adjustsignals));
-        title('Signals Received Sum');
+        plot(t,receivedsignal);
+        title('Received Signal');
         xlabel('t(s)');
         ylabel('Amplitude');
+        axis([0 max(t)*1.01 min(receivedsignal)-1 max(receivedsignal)+1]);
         
         % figure(5);
         % plot(t,adjustsignals_Loss);
@@ -77,13 +90,14 @@ function [val] = receptor_BSposError(fieldx,fieldy,BS,R,group,f,c,N,lambda,erro,
         % ylabel('Amplitude');
         
         figure(6);
-        plot(t,sum(adjustsignals_Loss));
-        title('Signals Received Sum with Losses');
+        plot(t,receivedsignal_Loss);
+        title('Received Signal with Losses');
         xlabel('t(s)');
         ylabel('Amplitude');
-    
+        axis([0 max(t)*1.01 min(receivedsignal_Loss)*1.01 max(receivedsignal_Loss)*1.01]);
+
         figure(7);
-        plot(t,sum(adjustsignals_LossCorrect)-sum(adjustsignals_Loss));
+        plot(t,idealsignal_Loss-receivedsignal_Loss);
         title('Received Signals Sum Differences');
         xlabel('t(s)');
         ylabel('Amplitude');
