@@ -1,5 +1,4 @@
 function [valsignal, BSoptm, Roptm] = optmdrone(fieldx,fieldy,group,f,c,N,lambda,divx,divy)
-    
     valsignal = zeros(divx,divy);
     spacex = fieldx/divx;
     spacey = fieldy/divy;
@@ -49,7 +48,7 @@ function [valsignal, BSoptm, Roptm] = optmdrone(fieldx,fieldy,group,f,c,N,lambda
     
         PropagationLoss = (4*pi*R/lambda).^2;
 
-        [adjustsignals, adjustsignals_Loss, receivedsignal,receivedsignal_Loss] = adjsig(N,t,signals,traveling_time,PropagationLoss);
+        [~, ~, ~,receivedsignal_Loss] = adjsig(N,t,signals,traveling_time,PropagationLoss);
         
         valsignal(divy-j+1,i) = max(abs(receivedsignal_Loss));
 
