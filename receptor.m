@@ -1,11 +1,10 @@
 function [val] = receptor(R,f,c,N,lambda,mode)
     %AF = 0;
-    %O primeiro sensor a transmitir será o mais distante ao recetor. Este será
-    %o sensor de referência com fase 0
+    %To remove z component error from sensors -> activate line below
     phase = (max(R)-R).*2*pi/lambda;
     traveling_time = R/c;
     
-    %O receptor vai esperar um intervalo de tempo igual a t pelos sinais todos
+    %The receiver will wait a time interval equal to t for all signals
     tmax = max(R)*3/c;
     t=linspace(0,tmax,10000); % 1 período
     %tstem = 0:1/f:tmax;

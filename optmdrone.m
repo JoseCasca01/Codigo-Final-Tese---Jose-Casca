@@ -25,7 +25,7 @@ function [valsignal, BSoptm, Roptm] = optmdrone(fieldx,fieldy,group,f,c,N,lambda
             phase = (max(R)-R).*2*pi/lambda;
             traveling_time = R/c;
     
-            %O receptor vai esperar um intervalo de tempo igual a t pelos sinais todos
+            %The receiver will wait a time interval equal to t for all signals
             tmax = max(R)*3/c;
             t=linspace(0,tmax,10000); % 1 período
 

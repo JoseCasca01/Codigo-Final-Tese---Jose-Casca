@@ -1,6 +1,6 @@
-function [val,grouperror] = receptor_SensorposError(fieldx,fieldy,BS,R,group,f,c,N,lambda,erro,mode)
+function [val,Rerror] = receptor_SensorposError(fieldx,fieldy,BS,R,group,f,c,N,lambda,erro,mode)
 
-    %O receptor vai esperar um intervalo de tempo igual a t pelos sinais todos
+    %The receiver will wait a time interval equal to t for all signals
     
     PT = 1;
     GT = 1;
@@ -12,8 +12,7 @@ function [val,grouperror] = receptor_SensorposError(fieldx,fieldy,BS,R,group,f,c
         PR(i) = PT * GT * GR * lambda^2/(16*pi^2*R(i)^2);
     end
     
-    %O primeiro sensor a transmitir será o mais distante ao recetor. Este será
-    %o sensor de referência com fase 0
+    %The sensor furthest from the receiver will be the reference sensor with phase 0
     phaseCorrect = (max(R)-R).*2*pi/lambda;
     traveling_time = R/c;
 
@@ -26,7 +25,7 @@ function [val,grouperror] = receptor_SensorposError(fieldx,fieldy,BS,R,group,f,c
         end
     end
     
-    %Para remover erro da componetne z dos sensores -> ativar linha abaixo
+    %To remove z component error from sensors -> activate line below
     %grouperror(:,:,3)=zeros(size(grouperror,1),size(grouperror,2),1);
 
     Rerror = distance(grouperror,BS);    
